@@ -4,10 +4,13 @@
   "manifest_version": 2,
   "description": "__MSG_appDescription__",
   "icons": {
-    "16": "icons/icon-16.png",
-    "128": "icons/icon-128.png"
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "120": "icons/icon-120.png",
+    "192": "icons/icon-192.png"
   },
-  "default_locale": "en",
+  "default_locale": "zh_CN",
   "background": {
     "scripts": [
       "scripts/background.js"
@@ -21,7 +24,6 @@
     "https://*/*",
 		"contextMenus"
   ],
-  "options_page": "options.html",
   "content_scripts": [
     {
       "matches": [
@@ -29,6 +31,7 @@
         "https://*/*"
       ],
       "js": [
+        "scripts/custom-elements.min.js",
         "scripts/contentscript.js"
       ],
       "run_at": "document_end",
@@ -37,10 +40,10 @@
   ],
   "browser_action": {
     "default_icon": {
-      "19": "icons/icon-19.png",
-      "38": "icons/icon-38.png"
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
     },
-    "default_title": "Translation Extension",
+    "default_title": "__MSG_appName__",
     "default_popup": "popup.html"
   }
 }

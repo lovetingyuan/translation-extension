@@ -1,24 +1,77 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <link href="styles/popup.css" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app" class="popup-content">
-      <h1 class="app-name">Extension Boilerplate</h1>
 
-      <div id="display-container"></div>
+<head>
+  <meta charset="utf-8">
+  <style>
+    #app {
+      padding: 40px;
+      width: 300px;
+    }
 
-      <footer>
-        <p>
-          <small>
-            <a href="#" class="js-options">Options</a>
-          </small>
-        </p>
-      </footer>
+    #origin {
+      padding: 5px 10px;
+      height: 40px;
+      font-size: 1.2em;
+      width: 70%;
+      display: inline-block;
+      box-sizing: border-box;
+      vertical-align: middle;
+    }
+
+    #translate {
+      cursor: pointer;
+      padding: 5px 10px;
+      height: 40px;
+      width: 28%;
+      display: inline-block;
+      box-sizing: border-box;
+      vertical-align: middle;
+    }
+
+    #result {
+      font-size: 18px;
+    }
+
+    #result:before {
+      content: '结果: ';
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="popup-content">
+    <div>
+      <input type="text" id="origin">
+      <input type="button" id="translate" value="翻译">
     </div>
-    
-    <script src="scripts/popup.js"></script>
-  </body>
+    <p id="result"></p>
+  </div>
+  <script>
+    (function () {
+      const origin = document.getElementById('origin')
+      const translateBtn = document.getElementById('translate')
+      const result = document.getElementById('result')
+      const bgpage = chrome.extension.getBackgroundPage();
+
+      translateBtn.addEventListener('click', evt => {
+        const originText = origin.value.trim()
+        if (!originText) return
+        translateBtn.value = '翻译中...'
+        translateBtn.disabled = true
+        bgpage.fetchTransApi(originText).then(res => {
+          translateBtn.value = '翻译'
+          translateBtn.disabled = false
+          if (res) {
+            result.textContent = res.translation.join(', ')
+          } else {
+            result.textContent = '翻译失败'
+          }
+        })
+      })
+    })()
+
+  </script>
+</body>
+
 </html>

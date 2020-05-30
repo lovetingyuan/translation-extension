@@ -1,4 +1,4 @@
-; (function () {
+(function () {
   function getSelectionText() {
     let text = "";
     if (window.getSelection) {
@@ -8,36 +8,33 @@
     }
     return text;
   }
-
-  const ID = 'translation-result-dialog-CCNVUGFN8HSDKHONI8W9E'
-
   const dialogTemplate = `
-  <dialog id="${ID}">
-    <span id="${ID}-close" title="关闭">×</span>
-    <ul style="text-align: left;">
+  <dialog>
+    <span data-close title="关闭">×</span>
+    <ul>
       <li>
         <p>
-          <span id="${ID}-origin"></span><span title="播放" id="${ID}-origin-speaker">🔈</span>
+          <span data-origin></span><span title="播放" data-speaker>🔉</span><a data-link target="_blank" rel="noreferer noopener">🌐</a>
         </p>
       </li>
       <li>
         <p>
-          <span id="${ID}-result"></span><span title="播放" id="${ID}-result-speaker">🔈</span>
+          <span data-result></span><span title="播放" data-speaker>🔉</span><a data-link target="_blank" rel="noreferer noopener">🌐</a>
         </p>
       </li>
     </ul>
-    <audio id="${ID}-player"></audio>
+    <audio data-audio></audio>
   </dialog>
   `
 
   const dialogStyle = `
-  #${ID} {
+  dialog {
     position: fixed;
     top: 50%;
     left: 50%;
     right: auto;
     padding: 26px 40px;
-    min-width: 160px;
+    min-width: 240px;
     transform: perspective(500px) translate(-50%, -50%);
     background: linear-gradient(to bottom, #FFF, #F4F4F4) #FFF;
     border: none;
@@ -45,11 +42,23 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     text-align: center;
     transform-origin: 50% 50%;
-    animation: dialog-${ID} 300ms cubic-bezier(.3,0,.1,1.4) forwards 1;
+    animation: dialog 300ms cubic-bezier(.3,0,.1,1.4) forwards 1;
     will-change: transform, opacity;
     font-size: 16px;
   }
-  #${ID}-close {
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  ul li {
+    margin: 12px 0;
+    text-align: left;
+  }
+  ul li p {
+    margin: 0;
+  }
+  [data-close] {
     cursor: pointer;
     display: inline-block;
     width: 24px;
@@ -58,30 +67,37 @@
     font-size: 30px;
     position: absolute;
     right: 20px;
-    top: 20px;
+    top: 14px;
+    user-select: none;
   }
-  #${ID}-origin, #${ID}-result {
+  [data-origin], [data-result] {
     display: inline-block;
     margin-right: 16px;
   }
-  #${ID}-origin-speaker, #${ID}-result-speaker {
+  [data-speaker] {
     cursor: pointer;
     user-select: none;
   }
-  #${ID}-origin:before {
+  [data-link] {
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 10px;
+    user-select: none;
+  }
+  [data-origin]:before {
     content: "原文: ";
     display: inline-block;
     margin-right: 12px;
     font-weight: 500;
   }
-  #${ID}-result:before {
+  [data-result]:before {
     content: "结果: ";
     display: inline-block;
     margin-right: 12px;
     font-weight: 500;
   }
   
-  @keyframes dialog-${ID} {
+  @keyframes dialog {
     from {
       transform: perspective(500px) translate(-50%, -25%) rotateX(45deg) scale(0.1);
       opacity: 0;
@@ -106,49 +122,90 @@
     
     /** option 3: "zoom" */
     background: radial-gradient(circle at center, rgba(50,50,50,0.5), rgba(0,0,0,0.5));
-    animation: backdrop-${ID} 500ms ease forwards 1;
+    animation: backdrop 500ms ease forwards 1;
   }
   
-  @keyframes backdrop-${ID} {
+  @keyframes backdrop {
     from { opacity: 0; }
     to { opacity: 1; }
   }`
 
-  const dialogDom = document.createElement('div')
-  dialogDom.innerHTML = dialogTemplate.trim()
+  class CustomDialog extends HTMLElement {
+    constructor() {
+      super();
+      const container = document.createElement('div')
+      container.innerHTML = dialogTemplate
 
-  function showDialog(originText, translation, speakerUrl, tspeakerUrl) {
-    let translationResultDialog = document.getElementById(ID)
-    if (!translationResultDialog) {
-      translationResultDialog = dialogDom.firstElementChild
-      translationResultDialog.addEventListener('click', (evt) => {
-        if (evt.target.id === ID) {
-          const rect = translationResultDialog.getBoundingClientRect();
-          const isInDialog = (rect.top <= evt.clientY && evt.clientY <= rect.top + rect.height
-            && rect.left <= evt.clientX && evt.clientX <= rect.left + rect.width);
-          if (!isInDialog) {
-            translationResultDialog.close();
-          }
-        } else if (evt.target.id === ID + '-origin-speaker' || evt.target.id === ID + '-result-speaker') {
-          const player = document.getElementById(ID + '-player')
-          player.src = evt.target.dataset.url
-          player.play()
-        } else if (evt.target.id === ID + '-close') {
-          translationResultDialog.close()
-        }
-      })
-      const style = document.createElement('style')
-      style.textContent = dialogStyle
-      document.body.appendChild(style)
-      document.body.appendChild(translationResultDialog)
+      const shadowRoot = this.attachShadow({ mode: 'open' });
+
+      const style = document.createElement('style');
+      style.textContent = dialogStyle;
+
+      shadowRoot.appendChild(style);
+      const dialog = container.firstElementChild
+      shadowRoot.appendChild(dialog);
+      this.onDialogClick = this.onDialogClick.bind(this)
+      this.dialog = dialog
     }
-    document.getElementById(ID + '-origin').textContent = originText
-    document.getElementById(ID + '-origin-speaker').dataset.url = speakerUrl
+    connectedCallback() {
+      this.dialog.addEventListener('click', this.onDialogClick)
+    }
 
-    document.getElementById(ID + '-result').textContent = translation.join(', ')
-    document.getElementById(ID + '-result-speaker').dataset.url = tspeakerUrl
+    disconnectedCallback() {
+      this.dialog.removeEventListener('click', this.onDialogClick)
+    }
+    onDialogClick(evt) {
+      const { dataset } = evt.target
+      if ('close' in dataset) {
+        this.dialog.close();
+      } else if ('speaker' in dataset) {
+        this.play(dataset.url)
+      } else {
+        const rect = this.dialog.getBoundingClientRect();
+        const isInDialog = (rect.top <= evt.clientY && evt.clientY <= rect.top + rect.height
+          && rect.left <= evt.clientX && evt.clientX <= rect.left + rect.width);
+        if (!isInDialog) {
+          this.dialog.close();
+        }
+      }
+    }
+    play(audiourl) {
+      const player = this.shadowRoot.querySelector('audio')
+      if (!player.onerror) {
+        player.onerror = (evt) => {
+          window.open(evt.target.src)
+        }
+      }
+      if (player.src !== audiourl) {
+        player.src = audiourl
+      }
+      player.play()
+    }
+    open(originText, translation, originSpeak, resultSpeak) {
+      this.shadowRoot.querySelector('[data-origin]').textContent = originText
+      this.shadowRoot.querySelector('[data-result]').textContent = translation.join(', ')
+      const [speaker1, speaker2] = [
+        ...this.shadowRoot.querySelectorAll('[data-speaker]')
+      ]
+      speaker1.dataset.url = originSpeak
+      speaker2.dataset.url = resultSpeak
+      const [link1, link2] = [
+        ...this.shadowRoot.querySelectorAll('[data-link]')
+      ]
+      link1.href = 'https://youdao.com/w/' + encodeURIComponent(originText)
+      link2.href = 'https://youdao.com/w/' + encodeURIComponent(translation[0])
+      try {
+        this.dialog.showModal()
+      } catch (err) {}
+      setTimeout(() => {
+        this.shadowRoot.querySelectorAll('[data-link]').forEach(d => d.blur())
+      });
+    }
+  }
+  customElements.define('custom-dialog', CustomDialog);
 
-    translationResultDialog.showModal()
+  if (!document.querySelector('custom-dialog')) {
+    document.body.appendChild(document.createElement('custom-dialog'))
   }
 
   chrome.runtime.onMessage.addListener(
@@ -168,7 +225,7 @@
             const {
               query, translation, speakUrl, tSpeakUrl
             } = request.payload
-            showDialog(query, translation, speakUrl, tSpeakUrl)
+            document.querySelector('custom-dialog').open(query, translation, speakUrl, tSpeakUrl)
           }
         }
       }

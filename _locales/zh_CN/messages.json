@@ -1,14 +1,14 @@
 {
   "appName": {
-    "message": "Translation tool",
+    "message": "翻译工具",
     "description": "The name of the application"
   },
   "btnTooltip": {
-    "message": "Translation tool",
+    "message": "翻译工具",
     "description": "Tooltip for button"
   },
   "appDescription": {
-    "message": "Translate Chinese to English.",
+    "message": "轻松翻译到明白的含义",
     "description": "The description of the application"
   }
 }

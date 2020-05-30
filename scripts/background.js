@@ -3,20 +3,16 @@ chrome.contextMenus.create({
   title: '翻译选择的词汇',
   contexts: ["selection"],  // ContextType
   onclick() {
-    handleRightClickMenu()
-  } // A callback function
-});
-
-function handleRightClickMenu () {
-  sendToContentScript({action: "GET_SELECTED_TEXT"}, response => {
-    fetchTransApi(response.data).then(res => {
-      sendToContentScript({
-        action: 'FETCHED_TRANSLATION',
-        payload: res
+    sendToContentScript({action: "GET_SELECTED_TEXT"}, response => {
+      fetchTransApi(response.data).then(res => {
+        sendToContentScript({
+          action: 'FETCHED_TRANSLATION',
+          payload: res
+        })
       })
     })
-  })
-}
+  } // A callback function
+});
 
 function sendToContentScript (payload, callback) {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -24,6 +20,16 @@ function sendToContentScript (payload, callback) {
       callback && callback(response)
     });
   });
+}
+
+function escapeHTML (unsafe_str) {
+  return unsafe_str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/\'/g, '&#39;')
+    .replace(/\//g, '&#x2F;')
 }
 
 function fetchTransApi (q) {
@@ -39,7 +45,14 @@ function fetchTransApi (q) {
     method: 'POST',
     // headers,
     body
-  }).then(res => res.json()).catch(err => {
+  }).then(res => res.json()).then(res => {
+    if (res && res.translation) {
+      res.translation = res.translation.map(escapeHTML)
+    }
+    if (res && res.errorCode == '0') {
+      return res
+    }
+  }).catch(err => {
     console.log(err)
   })
 }
