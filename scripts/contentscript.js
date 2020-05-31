@@ -1,13 +1,39 @@
 (function () {
   function getSelectionText() {
     let text = "";
-    if (window.getSelection) {
-      text = window.getSelection().toString();
+    if (document.getSelection) {
+      text = document.getSelection().toString();
     } else if (document.selection && document.selection.type != "Control") {
       text = document.selection.createRange().text;
     }
     return text;
   }
+
+  function debounce (time, callback) {
+    let timer
+    return () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        clearTimeout(timer)
+        callback()
+      }, time);
+    }
+  }
+  // document.addEventListener('contextmenu', e => {
+  //   const selection = getSelectionText().trim()
+  //   if (selection) {
+  //     chrome.runtime.sendMessage({action: "USER_SELECTED", selection}, function(response) {
+  //       // console.log(response.farewell);
+  //     });
+  //   }
+  // });
+  document.addEventListener('selectionchange', debounce(200, () => {
+    const selection = getSelectionText().trim()
+    console.log(selection || false)
+    selection && chrome.runtime.sendMessage({action: "USER_SELECTED", selection}, function(response) {
+      // console.log(response.farewell);
+    });
+  }))
   const dialogTemplate = `
   <dialog>
     <span data-close title="关闭">×</span>
@@ -23,7 +49,7 @@
         </p>
       </li>
     </ul>
-    <audio data-audio></audio>
+    <audio data-audio preload="auto"></audio>
   </dialog>
   `
 
@@ -216,7 +242,7 @@
       if (!sender.tab) { // from extension
         if (request.action === 'GET_SELECTED_TEXT') {
           sendResponse({
-            data: getSelectionText()
+            selection: getSelectionText()
           })
         } else if (request.action === 'FETCHED_TRANSLATION') {
           if (!request.payload) {
