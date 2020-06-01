@@ -29,7 +29,6 @@
   // });
   document.addEventListener('selectionchange', debounce(200, () => {
     const selection = getSelectionText().trim()
-    console.log(selection || false)
     selection && chrome.runtime.sendMessage({action: "USER_SELECTED", selection}, function(response) {
       // console.log(response.farewell);
     });
