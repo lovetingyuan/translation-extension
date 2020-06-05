@@ -1,5 +1,3 @@
-console.log('background script')
-
 const current = {
   word: '',
   translation: null
@@ -48,12 +46,14 @@ createMenu('查看简讯', () => {
   })
 }, menuId)
 
-const updateMenu = () => {
-  fetchTransApi(current.word).then(res => {
+const fetchTranslation = debounce(200, () => {
+  const word = current.word
+  console.log('start fetch translation: ' + word)
+  fetchTransApi(word).then(res => {
     if (!res) {
       current.translation = null
       chrome.contextMenus.update(menuId, {
-        title: `翻译失败：${current.word}`,
+        title: `翻译失败：${word}`,
         contexts: ["selection"],
         // onclick: handleMenuClick
       });
@@ -66,18 +66,38 @@ const updateMenu = () => {
       // onclick: handleMenuClick
     });
   })
-}
+})
 
+const updateMenu = () => {
+  chrome.contextMenus.update(menuId, {
+    title: `正在翻译: ${current.word}...`,
+    contexts: ["selection"],
+    // onclick: handleMenuClick
+  });
+  fetchTranslation()
+}
+function debounce (time, callback) {
+  let timer
+  return () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      clearTimeout(timer)
+      callback()
+    }, time);
+  }
+}
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   // console.log(sender.tab ?
   //   "from a content script:" + sender.tab.url :
   //   "from the extension");
   if (request.action === "USER_SELECTED") {
-    current.word = request.selection
-    current.translation = null
-    updateMenu()
-    sendResponse({});
+    if (!(current.word === request.selection && current.translation) && request.selection.trim()) {
+      current.word = request.selection
+      current.translation = null
+      updateMenu()
+    }
   }
+  sendResponse({})
 });
 
 function sendToContentScript(payload, callback) {

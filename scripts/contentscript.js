@@ -19,15 +19,7 @@
       }, time);
     }
   }
-  // document.addEventListener('contextmenu', e => {
-  //   const selection = getSelectionText().trim()
-  //   if (selection) {
-  //     chrome.runtime.sendMessage({action: "USER_SELECTED", selection}, function(response) {
-  //       // console.log(response.farewell);
-  //     });
-  //   }
-  // });
-  document.addEventListener('selectionchange', debounce(200, () => {
+  document.addEventListener('selectionchange', debounce(50, () => {
     const selection = getSelectionText().trim()
     selection && chrome.runtime.sendMessage({action: "USER_SELECTED", selection}, function(response) {
       // console.log(response.farewell);
@@ -227,11 +219,6 @@
       });
     }
   }
-  customElements.define('custom-dialog', CustomDialog);
-
-  if (!document.querySelector('custom-dialog')) {
-    document.body.appendChild(document.createElement('custom-dialog'))
-  }
 
   chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
@@ -244,9 +231,13 @@
             selection: getSelectionText()
           })
         } else if (request.action === 'FETCHED_TRANSLATION') {
+          customElements.define('custom-dialog', CustomDialog);
           if (!request.payload) {
             alert('翻译失败...')
           } else {
+            if (!document.querySelector('custom-dialog')) {
+              document.body.appendChild(document.createElement('custom-dialog'))
+            }
             const {
               query, translation, speakUrl, tSpeakUrl
             } = request.payload
