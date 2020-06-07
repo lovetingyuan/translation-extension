@@ -231,11 +231,11 @@
             selection: getSelectionText()
           })
         } else if (request.action === 'FETCHED_TRANSLATION') {
-          customElements.define('custom-dialog', CustomDialog);
           if (!request.payload) {
             alert('翻译失败...')
           } else {
             if (!document.querySelector('custom-dialog')) {
+              customElements.define('custom-dialog', CustomDialog);
               document.body.appendChild(document.createElement('custom-dialog'))
             }
             const {
