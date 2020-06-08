@@ -9,6 +9,10 @@
       width: 300px;
     }
 
+    button {
+      cursor: pointer;
+    }
+
     #origin {
       padding: 5px 10px;
       height: 40px;
@@ -38,6 +42,10 @@
       display: inline-block;
       margin-right: 10px;
     }
+    .error-text {
+      font-size: .9em; color: hsl(0, 96%, 60%); font-style: italic;
+    }
+
   </style>
 </head>
 
@@ -48,6 +56,10 @@
       <input type="button" id="translate" value="翻 译">
     </div>
     <p id="result"></p>
+    <div class="buttons">
+      <button id="copy">复制结果</button>
+      <button id="view">查看原文</button>
+    </div>
   </div>
   <script src="scripts/popup.js"></script>
 </body>
