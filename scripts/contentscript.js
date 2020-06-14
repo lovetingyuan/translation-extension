@@ -31,12 +31,12 @@
     <ul>
       <li>
         <p>
-          <span data-origin></span><span title="播放" data-speaker>🔉</span><a data-link target="_blank" rel="noreferer noopener">🌐</a>
+          <span data-origin></span><span title="播放" data-speaker>🔉</span><a data-link target="_blank" rel="noreferrer noopener">🌐</a>
         </p>
       </li>
       <li>
         <p>
-          <span data-result></span><span title="播放" data-speaker>🔉</span><a data-link target="_blank" rel="noreferer noopener">🌐</a>
+          <span data-result></span><span title="播放" data-speaker>🔉</span><a data-link target="_blank" rel="noreferrer noopener">🌐</a>
         </p>
       </li>
     </ul>
