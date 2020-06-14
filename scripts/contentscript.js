@@ -51,7 +51,9 @@
     left: 50%;
     right: auto;
     padding: 26px 40px;
+    padding-top: 30px;
     min-width: 240px;
+    max-width: 60vw;
     transform: perspective(500px) translate(-50%, -50%);
     background: linear-gradient(to bottom, #FFF, #F4F4F4) #FFF;
     border: none;
